@@ -145,6 +145,12 @@ public final class RepairManager implements AutoCloseable {
   }
 
   public void handleMetricsRequests() throws ReaperException {
+    Preconditions.checkState(context.isDistributed.get(), "Only valid with multiple Reaper instances");
+
+    Preconditions.checkState(
+        context.config.getDatacenterAvailability().isInCollocatedMode(),
+        "metrics are fetched directly in ALL mode");
+
     try {
       heart.beatMetrics();
     } catch (RuntimeException e) {

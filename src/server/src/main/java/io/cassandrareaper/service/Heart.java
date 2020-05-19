@@ -76,19 +76,25 @@ final class Heart implements AutoCloseable {
   }
 
   synchronized void beat() {
-    if (context.storage instanceof IDistributedStorage
-        && lastBeat.get() + maxBeatFrequencyMillis < System.currentTimeMillis()) {
-
-      lastBeat.set(System.currentTimeMillis());
-      ((IDistributedStorage) context.storage).saveHeartbeat();
+    if (context.storage instanceof IDistributedStorage) {
+      if (lastBeat.get() + maxBeatFrequencyMillis < System.currentTimeMillis()) {
+        lastBeat.set(System.currentTimeMillis());
+        ((IDistributedStorage) context.storage).saveHeartbeat();
+      }
+      if (!context.isDistributed.get() && 1 < ((IDistributedStorage) context.storage).countRunningReapers()) {
+        context.isDistributed.set(true);
+      }
     }
   }
 
   synchronized void beatMetrics() {
-    if (context.storage instanceof IDistributedStorage
-            && context.config.getDatacenterAvailability().isInCollocatedMode()) {
-      updateRequestedNodeMetrics();
-    }
+    Preconditions.checkState(context.isDistributed.get(), "Only valid with multiple Reaper instances");
+
+    Preconditions.checkState(
+        context.config.getDatacenterAvailability().isInCollocatedMode(),
+        "metrics are fetched directly in ALL mode");
+
+    updateRequestedNodeMetrics();
   }
 
   AtomicBoolean isCurrentlyUpdatingNodeMetrics() {
@@ -107,8 +113,12 @@ final class Heart implements AutoCloseable {
   }
 
   private void updateRequestedNodeMetrics() {
-    Preconditions.checkArgument(context.storage instanceof IDistributedStorage);
-    //IDistributedStorage storage = ((IDistributedStorage) context.storage);
+    Preconditions.checkState(context.isDistributed.get(), "Only valid with multiple Reaper instances");
+
+    Preconditions.checkState(
+        context.config.getDatacenterAvailability().isInCollocatedMode(),
+        "metrics are fetched directly in ALL mode");
+
     registerGauges();
 
     if (!updatingNodeMetrics.getAndSet(true)) {

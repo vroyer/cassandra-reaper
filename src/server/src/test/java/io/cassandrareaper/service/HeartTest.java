@@ -81,7 +81,6 @@ public final class HeartTest {
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
-      heart.beatMetrics();
       Awaitility.await().until(() -> {
         try {
           Mockito.verify((CassandraStorage)context.storage, Mockito.times(1)).saveHeartbeat();
@@ -109,7 +108,6 @@ public final class HeartTest {
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
-      heart.beatMetrics();
       Awaitility.await().until(() -> {
         try {
           Mockito.verify((CassandraStorage)context.storage, Mockito.times(1)).saveHeartbeat();
@@ -137,6 +135,7 @@ public final class HeartTest {
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
+      context.isDistributed.set(true);
       heart.beatMetrics();
       Thread.sleep(500);
     }
@@ -168,6 +167,7 @@ public final class HeartTest {
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
+      context.isDistributed.set(true);
       heart.beatMetrics();
       Thread.sleep(500);
     }
@@ -203,6 +203,7 @@ public final class HeartTest {
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
+      context.isDistributed.set(true);
       heart.beatMetrics();
       Thread.sleep(500);
     }
@@ -255,6 +256,7 @@ public final class HeartTest {
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
+      context.isDistributed.set(true);
       heart.beatMetrics();
       Thread.sleep(500);
     }
@@ -313,6 +315,7 @@ public final class HeartTest {
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
+      context.isDistributed.set(true);
       heart.beatMetrics();
       Thread.sleep(500);
     }
@@ -377,6 +380,7 @@ public final class HeartTest {
 
     try (Heart heart = Heart.create(context, TimeUnit.SECONDS.toMillis(2))) {
       heart.beat();
+      context.isDistributed.set(true);
       heart.beatMetrics();
       Assertions.assertThat(heart.isCurrentlyUpdatingNodeMetrics().get()).isTrue();
       Thread.sleep(2100);
